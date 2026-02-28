@@ -6,6 +6,12 @@ import './index.css';
 
 // Transposed Table Component for Weekly View
 const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchAsin, data]);
+
   const grouped = useMemo(() => {
     const groups = {};
     const lowerSearch = (searchAsin || '').toLowerCase();
@@ -59,8 +65,19 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
                     const rowForWeek = rows.find(r => r.Week === w);
                     let val = rowForWeek ? rowForWeek[metric] : '-';
                     const isCurrency = metric.includes('Sales') || metric.includes('Spend');
-                    if (val !== '-' && isCurrency && typeof val === 'number') {
-                      val = `$${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+                    const isPercentage = metric.includes('%');
+
+                    if (val !== '-' && val !== undefined && val !== null) {
+                      let num = typeof val === 'string' ? parseFloat(val.replace(/[^0-9.-]/g, '')) : val;
+                      if (!isNaN(num)) {
+                        if (isCurrency) {
+                          val = `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        } else if (isPercentage) {
+                          val = `${num.toFixed(2)}%`;
+                        } else {
+                          val = Math.round(num).toLocaleString();
+                        }
+                      }
                     }
                     return <td key={w} style={{ padding: '12px 24px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{val}</td>;
                   })}
@@ -81,12 +98,23 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
     return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>No matching ASINs found for filter.</div>;
   }
 
-  const toRender = searchAsin ? keys : keys.slice(0, 5);
+  const toRender = searchAsin ? keys : keys.slice(0, visibleCount);
 
   return (
     <div>
-      {!searchAsin && <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px', textAlign: 'center' }}>Showing top 5 items. Use the Search Bar to find a specific ASIN.</p>}
       {toRender.map(k => renderTable(k, grouped[k]))}
+
+      {!searchAsin && visibleCount < keys.length && (
+        <div style={{ textAlign: 'center', marginTop: '16px', marginBottom: '40px' }}>
+          <button
+            className="btn-primary"
+            onClick={() => setVisibleCount(prev => prev + 10)}
+            style={{ background: 'rgba(255,138,0,0.1)', color: '#ff8a00', border: '1px solid rgba(255,138,0,0.3)', padding: '12px 24px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+          >
+            ↓ Показать еще 10 (показано {visibleCount} из {keys.length})
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -368,11 +396,27 @@ function App() {
                 <tbody>
                   {filteredMonthlyData.map((row, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => (
-                        <td key={col} style={{ padding: '14px 12px', fontSize: '13px', color: col === 'ASIN' ? '#fff' : 'var(--text-primary)', fontWeight: col === 'ASIN' ? '600' : '400', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
-                          {col.includes('Sales') || col.includes('Spend') ? `$${parseFloat(row[col]).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : row[col]}
-                        </td>
-                      ))}
+                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
+                        let cellVal = row[col];
+                        if (cellVal !== undefined && cellVal !== null && !["Month", "ASIN", "Parent ASIN"].includes(col)) {
+                          let num = typeof cellVal === 'string' ? parseFloat(cellVal.replace(/[^0-9.-]/g, '')) : cellVal;
+                          if (!isNaN(num)) {
+                            if (col.includes('Sales') || col.includes('Spend')) {
+                              cellVal = `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            } else if (col.includes('%')) {
+                              cellVal = `${num.toFixed(2)}%`;
+                            } else {
+                              cellVal = Math.round(num).toLocaleString();
+                            }
+                          }
+                        }
+
+                        return (
+                          <td key={col} style={{ padding: '14px 12px', fontSize: '13px', color: col === 'ASIN' ? '#fff' : 'var(--text-primary)', fontWeight: col === 'ASIN' ? '600' : '400', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
+                            {cellVal}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
