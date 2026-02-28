@@ -37,7 +37,7 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
     return groups;
   }, [data, searchAsin, isParent]);
 
-  const metricsStr = ["Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"];
+  const metricsStr = ["Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"];
 
   const renderTable = (identifier, rows) => {
     const weeks = [...new Set(rows.map(r => r.Week))].sort();
@@ -146,25 +146,42 @@ function App() {
       if (listData.success && listData.data.length > 0) {
         const files = listData.data.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
 
-        const latestMonthly = files.find(f => f.key.includes('Monthly_Report'));
-        const latestChild = files.find(f => f.key.includes('Computed_Sales_Child'));
-        const latestParent = files.find(f => f.key.includes('Computed_Sales_Parent'));
+        const monthlyFiles = files.filter(f => f.key.includes('Monthly_Report')).slice(0, 24); // Up to 2 years
+        const childFiles = files.filter(f => f.key.includes('Computed_Sales_Child')).slice(0, 10); // Up to latest 10 uploads (~40 weeks max)
+        const parentFiles = files.filter(f => f.key.includes('Computed_Sales_Parent')).slice(0, 10);
 
-        if (latestMonthly) {
-          const res = await fetch(`https://granatan-backend.onrender.com/api/reports/get?key=${encodeURIComponent(latestMonthly.key)}`);
-          const data = await res.json();
-          if (data.success) setMonthlyData(data.data);
-        }
-        if (latestChild) {
-          const res = await fetch(`https://granatan-backend.onrender.com/api/reports/get?key=${encodeURIComponent(latestChild.key)}`);
-          const data = await res.json();
-          if (data.success) setChildData(data.data);
-        }
-        if (latestParent) {
-          const res = await fetch(`https://granatan-backend.onrender.com/api/reports/get?key=${encodeURIComponent(latestParent.key)}`);
-          const data = await res.json();
-          if (data.success) setParentData(data.data);
-        }
+        const fetchAndMerge = async (fileList) => {
+          const promises = fileList.map(async (f) => {
+            try {
+              const res = await fetch(`https://granatan-backend.onrender.com/api/reports/get?key=${encodeURIComponent(f.key)}`);
+              const data = await res.json();
+              return data.success ? data.data : [];
+            } catch (e) { return []; }
+          });
+          const arrays = await Promise.all(promises);
+          return arrays.flat();
+        };
+
+        const deduplicate = (arr, keyFn) => {
+          const seen = new Set();
+          return arr.filter(item => {
+            const k = keyFn(item);
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          });
+        };
+
+        const [monthlyMerged, childMerged, parentMerged] = await Promise.all([
+          fetchAndMerge(monthlyFiles),
+          fetchAndMerge(childFiles),
+          fetchAndMerge(parentFiles)
+        ]);
+
+        setMonthlyData(deduplicate(monthlyMerged, r => r.Month + '_' + r.ASIN + '_' + (r.SKU || '')));
+        setChildData(deduplicate(childMerged, r => r.Week + '_' + r.ASIN + '_' + (r.SKU || '')));
+        setParentData(deduplicate(parentMerged, r => r.Week + '_' + r.ParentASIN));
+
         setLastUpdate(new Date().toLocaleTimeString());
       }
     } catch (err) {
@@ -377,7 +394,7 @@ function App() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                    {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
+                    {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
                       <th
                         key={header}
                         onClick={() => handleSort(header)}
@@ -396,7 +413,7 @@ function App() {
                 <tbody>
                   {filteredMonthlyData.map((row, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
+                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
                         let cellVal = row[col];
                         if (cellVal !== undefined && cellVal !== null && !["Month", "ASIN", "Parent ASIN"].includes(col)) {
                           let num = typeof cellVal === 'string' ? parseFloat(cellVal.replace(/[^0-9.-]/g, '')) : cellVal;
