@@ -38,23 +38,23 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
 
     return (
       <div key={identifier} className="glass animate-fade-in" style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 24px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ padding: '16px 24px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
           <h3 style={{ fontSize: '15px', fontWeight: '600' }}>Item: <span style={{ color: '#ff8a00' }}>{identifier}</span></h3>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
             <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <th style={{ padding: '14px 24px', width: '200px', color: 'var(--text-secondary)', fontWeight: '600', fontSize: '12px' }}>KEY METRICS</th>
+              <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                <th style={{ padding: '14px 24px', width: '200px', color: 'var(--text-secondary)', fontWeight: '600', fontSize: '12px', borderRight: '1px solid rgba(255,255,255,0.12)' }}>KEY METRICS</th>
                 {weeks.map(w => (
-                  <th key={w} style={{ padding: '14px 24px', color: '#fff', fontWeight: '600', fontSize: '13px' }}>{w}</th>
+                  <th key={w} style={{ padding: '14px 24px', color: '#fff', fontWeight: '600', fontSize: '13px', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{w}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {metricsStr.map(metric => (
-                <tr key={metric} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                  <td style={{ padding: '12px 24px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>{metric}</td>
+                <tr key={metric} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                  <td style={{ padding: '12px 24px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{metric}</td>
                   {weeks.map(w => {
                     const rowForWeek = rows.find(r => r.Week === w);
                     let val = rowForWeek ? rowForWeek[metric] : '-';
@@ -62,7 +62,7 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
                     if (val !== '-' && isCurrency && typeof val === 'number') {
                       val = `$${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
                     }
-                    return <td key={w} style={{ padding: '12px 24px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: '500' }}>{val}</td>;
+                    return <td key={w} style={{ padding: '12px 24px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{val}</td>;
                   })}
                 </tr>
               ))}
@@ -284,7 +284,7 @@ function App() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)' }}>
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ff8a00', color: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }}>O</div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: '13px', fontWeight: '600' }}>{username || 'Manager'}</p>
@@ -348,12 +348,12 @@ function App() {
             <div className="glass" style={{ borderRadius: '16px', overflow: 'hidden', overflowX: 'auto', marginBottom: '40px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
                     {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
                       <th
                         key={header}
                         onClick={() => handleSort(header)}
-                        style={{ padding: '16px 12px', color: 'var(--text-secondary)', fontWeight: '500', fontSize: '11px', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}
+                        style={{ padding: '16px 12px', color: 'var(--text-secondary)', fontWeight: '500', fontSize: '11px', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', borderRight: '1px solid rgba(255,255,255,0.12)' }}
                       >
                         {header}
                         {sortConfig.key === header && (
@@ -367,9 +367,9 @@ function App() {
                 </thead>
                 <tbody>
                   {filteredMonthlyData.map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
                       {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Clicks", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => (
-                        <td key={col} style={{ padding: '14px 12px', fontSize: '13px', color: col === 'ASIN' ? '#fff' : 'var(--text-primary)', fontWeight: col === 'ASIN' ? '600' : '400', whiteSpace: 'nowrap' }}>
+                        <td key={col} style={{ padding: '14px 12px', fontSize: '13px', color: col === 'ASIN' ? '#fff' : 'var(--text-primary)', fontWeight: col === 'ASIN' ? '600' : '400', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
                           {col.includes('Sales') || col.includes('Spend') ? `$${parseFloat(row[col]).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : row[col]}
                         </td>
                       ))}
