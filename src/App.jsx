@@ -129,6 +129,7 @@ function App() {
   const [view, setView] = useState('Overview'); // 'Overview', 'Child', 'Parent'
   const [searchAsin, setSearchAsin] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'desc' });
+  const [selectedMonth, setSelectedMonth] = useState('All');
 
   // LIVE DATA STATE
   const [monthlyData, setMonthlyData] = useState([]);
@@ -236,6 +237,9 @@ function App() {
   // Filter Monthly Table Data
   const filteredMonthlyData = useMemo(() => {
     let data = [...monthlyData];
+    if (selectedMonth !== 'All') {
+      data = data.filter(item => item.Month === selectedMonth);
+    }
     if (searchAsin) {
       const lowerSearch = searchAsin.toLowerCase();
       data = data.filter(item =>
@@ -372,97 +376,122 @@ function App() {
           </div>
         </header>
 
-        {view === 'Overview' && (
-          <div className="animate-fade-in">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
-              <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>Total Sales (Filtered)</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', letterSpacing: '-0.5px' }}>
-                  ${filteredMonthlyData.reduce((sum, item) => sum + parseFloat(item['Total Sales']), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </h2>
-              </div>
-              <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>PPC Spend (Filtered)</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', letterSpacing: '-0.5px' }}>
-                  ${filteredMonthlyData.reduce((sum, item) => sum + parseFloat(item['PPC Spend']), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </h2>
-              </div>
-              <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>Total Units (Filtered)</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', letterSpacing: '-0.5px' }}>
-                  {filteredMonthlyData.reduce((sum, item) => sum + parseFloat(item['Total Units']), 0).toLocaleString()}
-                </h2>
-              </div>
-            </div>
+        {view === 'Overview' && (() => {
+          const availableMonths = ["All", ...[...new Set(monthlyData.map(r => r.Month))].sort((a, b) => b.localeCompare(a))];
 
-            <div className="glass" style={{ borderRadius: '16px', overflow: 'hidden', overflowX: 'auto', marginBottom: '40px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
-                <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                    {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
-                      <th
-                        key={header}
-                        onClick={() => handleSort(header)}
-                        style={{ padding: '16px 12px', color: 'var(--text-secondary)', fontWeight: '500', fontSize: '11px', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', borderRight: '1px solid rgba(255,255,255,0.12)' }}
-                      >
-                        {header}
-                        {sortConfig.key === header && (
-                          <span style={{ marginLeft: '4px', color: '#ff8a00' }}>
-                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMonthlyData.map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
-                        let cellVal = row[col];
-                        if (cellVal !== undefined && cellVal !== null && !["Month", "ASIN", "Parent ASIN"].includes(col)) {
-                          let num = typeof cellVal === 'string' ? parseFloat(cellVal.replace(/[^0-9.-]/g, '')) : cellVal;
-                          if (!isNaN(num)) {
-                            if (col.includes('Sales') || col.includes('Spend')) {
-                              cellVal = `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                            } else if (col.includes('%')) {
-                              cellVal = `${num.toFixed(2)}%`;
-                            } else {
-                              cellVal = Math.round(num).toLocaleString();
+          return (
+            <div className="animate-fade-in">
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '8px' }}>
+                {availableMonths.map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setSelectedMonth(m)}
+                    style={{
+                      padding: '8px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap',
+                      background: selectedMonth === m ? 'rgba(255,138,0,0.15)' : 'rgba(255,255,255,0.05)',
+                      color: selectedMonth === m ? '#ff8a00' : 'var(--text-secondary)',
+                      border: `1px solid ${selectedMonth === m ? 'rgba(255,138,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {m === 'All' ? 'Все месяца' : m}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
+                <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>Total Sales (Filtered)</p>
+                  <h2 style={{ fontSize: '32px', fontWeight: '700', letterSpacing: '-0.5px' }}>
+                    ${filteredMonthlyData.reduce((sum, item) => sum + parseFloat(item['Total Sales']), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </h2>
+                </div>
+                <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>PPC Spend (Filtered)</p>
+                  <h2 style={{ fontSize: '32px', fontWeight: '700', letterSpacing: '-0.5px' }}>
+                    ${filteredMonthlyData.reduce((sum, item) => sum + parseFloat(item['PPC Spend']), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </h2>
+                </div>
+                <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>Total Units (Filtered)</p>
+                  <h2 style={{ fontSize: '32px', fontWeight: '700', letterSpacing: '-0.5px' }}>
+                    {filteredMonthlyData.reduce((sum, item) => sum + parseFloat(item['Total Units']), 0).toLocaleString()}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="glass" style={{ borderRadius: '16px', overflow: 'hidden', overflowX: 'auto', marginBottom: '40px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
+                        <th
+                          key={header}
+                          onClick={() => handleSort(header)}
+                          style={{ padding: '16px 12px', color: 'var(--text-secondary)', fontWeight: '500', fontSize: '11px', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', borderRight: '1px solid rgba(255,255,255,0.12)' }}
+                        >
+                          {header}
+                          {sortConfig.key === header && (
+                            <span style={{ marginLeft: '4px', color: '#ff8a00' }}>
+                              {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                            </span>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMonthlyData.map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                        {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
+                          let cellVal = row[col];
+                          if (cellVal !== undefined && cellVal !== null && !["Month", "ASIN", "Parent ASIN"].includes(col)) {
+                            let num = typeof cellVal === 'string' ? parseFloat(cellVal.replace(/[^0-9.-]/g, '')) : cellVal;
+                            if (!isNaN(num)) {
+                              if (col.includes('Sales') || col.includes('Spend')) {
+                                cellVal = `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                              } else if (col.includes('%')) {
+                                cellVal = `${num.toFixed(2)}%`;
+                              } else {
+                                cellVal = Math.round(num).toLocaleString();
+                              }
                             }
                           }
-                        }
 
-                        return (
-                          <td key={col} style={{ padding: '14px 12px', fontSize: '13px', color: col === 'ASIN' ? '#fff' : 'var(--text-primary)', fontWeight: col === 'ASIN' ? '600' : '400', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
-                            {cellVal}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {isLoading && (
-                <div style={{ padding: '40px', textAlign: 'center', color: '#ff8a00' }}>📥 Securely fetching data from AWS S3...</div>
-              )}
-              {!isLoading && filteredMonthlyData.length === 0 && (
-                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>No data available. Click Refresh S3.</div>
-              )}
+                          return (
+                            <td key={col} style={{ padding: '14px 12px', fontSize: '13px', color: col === 'ASIN' ? '#fff' : 'var(--text-primary)', fontWeight: col === 'ASIN' ? '600' : '400', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
+                              {cellVal}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {isLoading && (
+                  <div style={{ padding: '40px', textAlign: 'center', color: '#ff8a00' }}>📥 Securely fetching data from AWS S3...</div>
+                )}
+                {!isLoading && filteredMonthlyData.length === 0 && (
+                  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>No data available. Click Refresh S3.</div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
+        {
+          view === 'Child' && (
+            <WeeklyTransposedTable data={childData} searchAsin={searchAsin} isParent={false} />
+          )
+        }
 
-        {view === 'Child' && (
-          <WeeklyTransposedTable data={childData} searchAsin={searchAsin} isParent={false} />
-        )}
+        {
+          view === 'Parent' && (
+            <WeeklyTransposedTable data={parentData} searchAsin={searchAsin} isParent={true} />
+          )
+        }
 
-        {view === 'Parent' && (
-          <WeeklyTransposedTable data={parentData} searchAsin={searchAsin} isParent={true} />
-        )}
-
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }
 
