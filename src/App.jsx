@@ -381,23 +381,31 @@ function App() {
 
           return (
             <div className="animate-fade-in">
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '8px' }}>
-                {availableMonths.map(m => (
-                  <button
-                    key={m}
-                    onClick={() => setSelectedMonth(m)}
+              <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>Фильтр по месяцу:</span>
+                <div style={{ position: 'relative' }}>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="input-field"
                     style={{
-                      padding: '8px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap',
-                      background: selectedMonth === m ? 'rgba(255,138,0,0.15)' : 'rgba(255,255,255,0.05)',
-                      color: selectedMonth === m ? '#ff8a00' : 'var(--text-secondary)',
-                      border: `1px solid ${selectedMonth === m ? 'rgba(255,138,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                      transition: 'all 0.2s'
+                      padding: '10px 36px 10px 16px', borderRadius: '12px', fontSize: '15px', fontWeight: '500', cursor: 'pointer',
+                      background: 'rgba(255,255,255,0.05)', color: '#ff8a00', border: '1px solid rgba(255,255,255,0.1)',
+                      outline: 'none', appearance: 'none', minWidth: '180px', display: 'inline-block'
                     }}
                   >
-                    {m === 'All' ? 'Все месяца' : m}
-                  </button>
-                ))}
+                    {availableMonths.map(m => (
+                      <option key={m} value={m} style={{ background: '#1a1a1e', color: '#fff' }}>
+                        {m === 'All' ? 'Показать все месяца' : m}
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ pointerEvents: 'none', position: 'absolute', right: '14px', top: '14px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff8a00" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  </div>
+                </div>
               </div>
+
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
                 <div className="glass" style={{ padding: '24px', borderRadius: '16px' }}>
