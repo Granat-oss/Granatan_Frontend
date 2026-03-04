@@ -257,7 +257,7 @@ function App() {
       });
     }
     return data;
-  }, [searchAsin, monthlyData, sortConfig]);
+  }, [searchAsin, monthlyData, sortConfig, selectedMonth]);
 
   if (!isAuthenticated) {
     return (
