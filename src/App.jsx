@@ -219,8 +219,8 @@ function App() {
           return new Date(dateStr + 'T12:00:00Z').getUTCDay() === 0;
         };
 
-        setMonthlyData(deduplicate(monthlyMerged, r => r.Month + '_' + r.ASIN + '_' + (r.SKU || '')));
-        setChildData(deduplicate(childMerged, r => r.Week + '_' + r.ASIN + '_' + (r.SKU || '')).filter(r => isSunday(r.Week)));
+        setMonthlyData(deduplicate(monthlyMerged, r => r.Month + '_' + r.ASIN));
+        setChildData(deduplicate(childMerged, r => r.Week + '_' + r.ASIN).filter(r => isSunday(r.Week)));
         setParentData(deduplicate(parentMerged, r => r.Week + '_' + r.ParentASIN).filter(r => isSunday(r.Week)));
 
         setLastUpdate(new Date().toLocaleTimeString());
