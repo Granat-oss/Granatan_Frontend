@@ -52,37 +52,72 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
                 <th style={{ padding: '14px 24px', width: '200px', color: 'var(--text-secondary)', fontWeight: '600', fontSize: '12px', borderRight: '1px solid rgba(255,255,255,0.12)' }}>KEY METRICS</th>
+                <th style={{ padding: '14px 24px', color: '#ff8a00', fontWeight: '700', fontSize: '13px', borderRight: '1px solid rgba(255,255,255,0.12)' }}>Среднее</th>
                 {weeks.map(w => (
                   <th key={w} style={{ padding: '14px 24px', color: '#fff', fontWeight: '600', fontSize: '13px', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{w}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {metricsStr.map(metric => (
-                <tr key={metric} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                  <td style={{ padding: '12px 24px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{metric}</td>
-                  {weeks.map(w => {
-                    const rowForWeek = rows.find(r => r.Week === w);
-                    let val = rowForWeek ? rowForWeek[metric] : '-';
-                    const isCurrency = metric.includes('Sales') || metric.includes('Spend');
-                    const isPercentage = metric.includes('%');
+              {metricsStr.map(metric => {
+                const isCurrency = metric.includes('Sales') || metric.includes('Spend');
+                const isPercentage = metric.includes('%');
 
-                    if (val !== '-' && val !== undefined && val !== null) {
-                      let num = typeof val === 'string' ? parseFloat(val.replace(/[^0-9.-]/g, '')) : val;
+                let validCount = 0;
+                let sum = 0;
+                weeks.forEach(w => {
+                  const rowForWeek = rows.find(r => r.Week === w);
+                  if (rowForWeek && rowForWeek[metric] !== undefined && rowForWeek[metric] !== null && rowForWeek[metric] !== '-') {
+                    const strVal = String(rowForWeek[metric]);
+                    if (strVal.trim() !== '') {
+                      const num = parseFloat(strVal.replace(/[^0-9.-]/g, ''));
                       if (!isNaN(num)) {
-                        if (isCurrency) {
-                          val = `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        } else if (isPercentage) {
-                          val = `${num.toFixed(2)}%`;
-                        } else {
-                          val = Math.round(num).toLocaleString();
-                        }
+                        sum += num;
+                        validCount++;
                       }
                     }
-                    return <td key={w} style={{ padding: '12px 24px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{val}</td>;
-                  })}
-                </tr>
-              ))}
+                  }
+                });
+
+                let avgRaw = validCount > 0 ? (sum / validCount) : 0;
+                let avgDisplay = '-';
+                if (validCount > 0) {
+                  if (isCurrency) {
+                    avgDisplay = `$${avgRaw.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  } else if (isPercentage) {
+                    avgDisplay = `${avgRaw.toFixed(2)}%`;
+                  } else {
+                    avgDisplay = Math.round(avgRaw).toLocaleString();
+                  }
+                }
+
+                return (
+                  <tr key={metric} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                    <td style={{ padding: '12px 24px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{metric}</td>
+                    <td style={{ padding: '12px 24px', color: '#ff8a00', fontSize: '14px', fontWeight: '700', borderRight: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,138,0,0.03)' }}>{avgDisplay}</td>
+                    {weeks.map(w => {
+                      const rowForWeek = rows.find(r => r.Week === w);
+                      let val = rowForWeek ? rowForWeek[metric] : '-';
+                      const isCurrency = metric.includes('Sales') || metric.includes('Spend');
+                      const isPercentage = metric.includes('%');
+
+                      if (val !== '-' && val !== undefined && val !== null) {
+                        let num = typeof val === 'string' ? parseFloat(val.replace(/[^0-9.-]/g, '')) : val;
+                        if (!isNaN(num)) {
+                          if (isCurrency) {
+                            val = `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                          } else if (isPercentage) {
+                            val = `${num.toFixed(2)}%`;
+                          } else {
+                            val = Math.round(num).toLocaleString();
+                          }
+                        }
+                      }
+                      return <td key={w} style={{ padding: '12px 24px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: '500', borderRight: '1px solid rgba(255,255,255,0.12)' }}>{val}</td>;
+                    })}
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
