@@ -39,8 +39,10 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
 
   const metricsStr = ["Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"];
 
+  const allWeeks = useMemo(() => [...new Set(data.map(r => r.Week))].sort(), [data]);
+
   const renderTable = (identifier, rows) => {
-    const weeks = [...new Set(rows.map(r => r.Week))].sort();
+    const weeks = allWeeks;
 
     return (
       <div key={identifier} className="glass animate-fade-in" style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden' }}>
