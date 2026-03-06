@@ -37,7 +37,7 @@ const WeeklyTransposedTable = ({ data, searchAsin, isParent }) => {
     return groups;
   }, [data, searchAsin, isParent]);
 
-  const metricsStr = ["Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Cost / Unit", "PPC Cost / Order", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"];
+  const metricsStr = ["Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Cost / Unit", "PPC Cost / Order", "PPC Orders", "PPC Impressions", "PPC Clicks", "PPC Conv %", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"];
 
   const allWeeks = useMemo(() => [...new Set(data.map(r => r.Week))].sort(), [data]);
 
@@ -469,7 +469,7 @@ function App() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Cost / Unit", "PPC Cost / Order", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
+                      {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Cost / Unit", "PPC Cost / Order", "PPC Orders", "PPC Impressions", "PPC Clicks", "PPC Conv %", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(header => (
                         <th
                           key={header}
                           onClick={() => handleSort(header)}
@@ -488,7 +488,7 @@ function App() {
                   <tbody>
                     {filteredMonthlyData.map((row, idx) => (
                       <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                        {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Cost / Unit", "PPC Cost / Order", "PPC Orders", "PPC Impressions", "PPC Clicks", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
+                        {["Month", "ASIN", "Parent ASIN", "Total Sales", "Total Orders", "Total Units", "Sessions", "Amz Conv %", "PPC Spend", "PPC Sales", "PPC Cost / Unit", "PPC Cost / Order", "PPC Orders", "PPC Impressions", "PPC Clicks", "PPC Conv %", "CTR_PPC %", "PPC vs Total %", "Org Conv %", "TACOS %", "ACOS %"].map(col => {
                           let cellVal = row[col];
                           if (cellVal !== undefined && cellVal !== null && !["Month", "ASIN", "Parent ASIN"].includes(col)) {
                             let num = typeof cellVal === 'string' ? parseFloat(cellVal.replace(/[^0-9.-]/g, '')) : cellVal;
